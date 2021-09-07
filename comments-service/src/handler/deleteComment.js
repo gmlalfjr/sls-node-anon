@@ -9,11 +9,11 @@ const log = bunyan.createLogger({ name: 'comment-services' });
 const deleteCommentHandler = async (event) => {
   const {
     requestContext: { authorizer: { username } },
-    pathParameters: { commentId }
+    pathParameters: { id }
   } = event;
 
   try {
-    const result = await commentService.deleteComment(commentId, username)
+    const result = await commentService.deleteComment(id, username)
     return successResponse('Success Delete Comment', 200, result);
   } catch (error) {
     log.error(error);

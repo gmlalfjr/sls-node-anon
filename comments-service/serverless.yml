@@ -33,14 +33,14 @@ functions:
     events:
       - http:
           method: GET
-          path: /comment/get/{postId}
+          path: /comment/{postId}
           authorizer: ${self:custom.authorizer}
   deleteCommentByPostId:
     handler: src/handler/deleteComment.handler
     events:
       - http:
           method: DELETE
-          path: /comment/{commentId}
+          path: /com/{id}
           authorizer: ${self:custom.authorizer}
 
 resources:
