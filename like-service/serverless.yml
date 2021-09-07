@@ -1,0 +1,59 @@
+service: like-service
+
+frameworkVersion: '2'
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  region: ap-southeast-1
+  environment:
+    LIKE_TABLE_NAME: ${self:custom.LikeTable.name}
+    TIMELINE_TABLE_NAME: ${self:custom.TimelineTable.name}
+  iamRoleStatements:
+    - ${file(iam/LikeTableIAM.yml):LikeTableIAM}
+
+resources:
+  Resources:
+    LikeTable: ${file(resources/LikeTable.yml):LikeTable}
+
+functions:
+  like:
+    handler: src/handlers/like.handler
+    events:
+      - http:
+          method: POST
+          path: /like/{id}
+          authorizer: ${self:custom.authorizer}
+  likeSet:
+    handler: src/handlers/likeStringSet.handler
+    events:
+      - http:
+          method: POST
+          path: /likeSet/{id}
+          authorizer: ${self:custom.authorizer}
+  likes:
+    handler: src/handlers/likes.handler
+    events:
+      - http:
+          method: POST
+          path: /likes/{id}
+          authorizer: ${self:custom.authorizer}
+
+custom:
+  #authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-authorize
+  authorizer: arn:aws:lambda:ap-southeast-1:811197814826:function:auth-service-dev-authorize
+  LikeTable:
+    name: !Ref LikeTable
+    arn: !GetAtt LikeTable.Arn
+  TimelineTable:
+    name: TimelineTable-dev
+    arn: arn:aws:dynamodb:ap-southeast-1:811197814826:table/TimelineTable-dev
+  bundle:
+    linting: false

@@ -1,0 +1,83 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: timeline-service
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: '2'
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  region: ap-southeast-1
+  environment:
+    TIMELINE_TABLE_NAME: ${self:custom.TimelineTable.name}
+    LIKE_TABLE_NAME: ${self:custom.LikeTable.name}
+  iamRoleStatements:
+    - ${file(iam/TimelineTableIAM.yml):TimelineTableIAM}
+
+resources:
+  Resources:
+    TimelineTable: ${file(resources/TimelineTable.yml):TimelineTable}
+
+functions:
+  createPostTimeline:
+    handler: src/handlers/createPostTimeline.handler
+    events:
+      - http:
+          method: POST
+          path: /timeline
+          authorizer: ${self:custom.authorizer}
+  getPostDetailTimeline:
+    handler: src/handlers/getPostDetail.handler
+    events:
+      - http:
+          method: GET
+          path: /timeline/{id}
+          authorizer: ${self:custom.authorizer}
+  getAllTimeline:
+    handler: src/handlers/getAllPostTimeline.handler
+    events:
+      - http:
+          method: GET
+          path: /timeline
+          authorizer: ${self:custom.authorizer}
+  deletePostTimeline:
+    handler: src/handlers/deletePostTimeline.handler
+    events:
+      - http:
+          method: DELETE
+          path: /timeline/{id}
+          authorizer: ${self:custom.authorizer}
+
+custom:
+  #authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-authorize
+  authorizer: arn:aws:lambda:ap-southeast-1:811197814826:function:auth-service-dev-authorize
+  TimelineTable:
+    name: !Ref TimelineTable
+    arn: !GetAtt TimelineTable.Arn
+  LikeTable:
+    name: LikeTable-dev
+  bundle:
+    linting: false

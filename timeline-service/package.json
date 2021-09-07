@@ -1,0 +1,33 @@
+{
+  "name": "timeline-service",
+  "version": "1.0.0",
+  "description": "Anonymouse timeline service",
+  "author": "Gamal Al Fajri",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@middy/core": "^2.5.1",
+    "@middy/http-error-handler": "^2.5.1",
+    "@middy/http-event-normalizer": "^2.5.1",
+    "@middy/http-json-body-parser": "^2.5.1",
+    "@middy/validator": "^2.5.1",
+    "ajv": "^8.6.2",
+    "ajv-errors": "^3.0.0",
+    "aws-sdk": "^2.972.0",
+    "bunyan": "^1.8.15",
+    "http-errors": "^1.8.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.5",
+    "middy-middleware-json-error-handler": "^3.0.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.24.2",
+    "serverless-bundle": "^4.4.0",
+    "serverless-pseudo-parameters": "^2.6.0"
+  }
+}

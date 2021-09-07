@@ -1,0 +1,136 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: auth-service
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: '2'
+plugins:
+  - serverless-bundle
+
+# resources:
+#   Resources:
+#     # This response is needed for custom authorizer failures cors support ¯\_(ツ)_/¯
+#     GatewayResponse:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#         ResponseType: EXPIRED_TOKEN
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#         StatusCode: '401'
+#     AuthFailureGatewayResponse:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#         ResponseType: UNAUTHORIZED
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#         StatusCode: '401'
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  region: ap-southeast-1
+
+
+functions:
+  authorize:
+    handler: src/handlers/authorize.handler
+    cors: true
+  privateEndpoint:
+    handler: src/handlers/private.handler
+    events:
+      - http:
+          path: /private
+          method: POST
+          authorizer: authorize
+          cors: true
+
+custom:
+  bundle:
+    linting: false
+
+resources:
+  Resources:
+    # This response is needed for custom authorizer failures cors support ¯\_(ツ)_/¯
+    ExpiredGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: EXPIRED_TOKEN
+        ResponseTemplates:
+          application/json: |
+            {
+              "success":false,
+              "message": $context.authorizer.messageString
+            }
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+    AuthFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+            application/json: |
+              {
+                "success":false,
+                "message":$context.authorizer.messageString
+              }
+        ResponseType: UNAUTHORIZED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+
+    DenyFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+            application/json: |
+              { "message": "$context.authorizer.Message" }
+        ResponseType: ACCESS_DENIED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '403'
+
+    MissingAuthGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+            application/json: |
+              { "message": "$context.authorizer.Message" }
+        ResponseType: MISSING_AUTHENTICATION_TOKEN
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '403'

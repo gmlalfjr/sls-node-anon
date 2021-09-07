@@ -1,0 +1,20 @@
+{
+  "name": "auth-service",
+  "version": "1.0.0",
+  "description": "Auth Services",
+  "devDependencies": {
+    "serverless-bundle": "^4.4.0",
+    "serverless-pseudo-parameters": "^2.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "http-errors": "^1.8.0",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.5",
+    "aws-sdk": "^2.972.0"
+  },
+  "author": "Gamal",
+  "license": "ISC"
+}

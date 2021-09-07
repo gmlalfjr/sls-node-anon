@@ -1,0 +1,23 @@
+TimelineTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: TimelineTable-${self:provider.stage}
+    BillingMode: PAY_PER_REQUEST
+    AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      - AttributeName: postId
+        AttributeType: S
+      - AttributeName: createdAt
+        AttributeType: S
+
+    KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+    GlobalSecondaryIndexes:
+      - IndexName: postIdIndex
+        KeySchema: 
+          - AttributeName: postId
+            KeyType: HASH
+        Projection:
+          ProjectionType: ALL

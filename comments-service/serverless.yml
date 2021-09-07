@@ -1,0 +1,62 @@
+service: comments-service
+
+frameworkVersion: '2'
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  region: ap-southeast-1
+  environment:
+    TIMELINE_TABLE_NAME: ${self:custom.TimelineTable.name}
+    LIKE_TABLE_NAME: ${self:custom.LikeTable.name}
+    COMMENT_TABLE_NAME: ${self:custom.CommentTable.name}
+  iamRoleStatements:
+    - ${file(iam/CommentTableIAM.yml):CommentTableIAM}
+
+functions:
+  createComment:
+    handler: src/handler/createComment.handler
+    events:
+      - http:
+          method: POST
+          path: /comment/{postId}
+          authorizer: ${self:custom.authorizer}
+  getCommentByPostId:
+    handler: src/handler/getCommentByPostId.handler
+    events:
+      - http:
+          method: GET
+          path: /comment/get/{postId}
+          authorizer: ${self:custom.authorizer}
+  deleteCommentByPostId:
+    handler: src/handler/deleteComment.handler
+    events:
+      - http:
+          method: DELETE
+          path: /comment/{commentId}
+          authorizer: ${self:custom.authorizer}
+
+resources:
+  Resources:
+    CommentTable: ${file(resources/CommentTable.yml):CommentTable}
+    
+custom:
+  #authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-authorize
+  authorizer: arn:aws:lambda:ap-southeast-1:811197814826:function:auth-service-dev-authorize
+  CommentTable:
+    name: !Ref CommentTable
+    arn: !GetAtt CommentTable.Arn
+  TimelineTable:
+    name: TimelineTable-dev
+    arn: arn:aws:dynamodb:ap-southeast-1:811197814826:table/TimelineTable-dev
+  LikeTable:
+    name: LikeTable-dev
+  bundle:
+    linting: false
