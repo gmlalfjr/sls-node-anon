@@ -1,16 +1,10 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
-/* eslint-disable no-empty */
-/* eslint-disable import/prefer-default-export */
-import { v4 as uuid } from 'uuid';
-import AWS from 'aws-sdk';
 import bunyan from 'bunyan';
 import middy from '../lib/commonMiddleware';
 import { errorResponse, successResponse } from '../commonResponse';
+import TimelineService from '../service/timelineService';
 
+const timeline = new TimelineService();
 const log = bunyan.createLogger({ name: 'timeline-services' });
-const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const validateRequest = (event) => {
   const allowedBody = [
@@ -41,31 +35,14 @@ async function createTimeline(event) {
   }
   const { username } = event.requestContext.authorizer;
   const { text, type } = event.body;
-  const date = new Date().toISOString();
-  const randomId = uuid();
-  const timeline = {
-    id: randomId,
-    text,
-    username,
-    type,
-    totalLikes: 0, // default value to 0
-    totalComments: 0, // default value to 0
-    createdAt: date,
-    modifiedAt: date,
-  };
 
   try {
-    const createQuery = {
-      TableName: process.env.TIMELINE_TABLE_NAME,
-      Item: timeline,
-    };
-
-    await dynamodb.put(createQuery).promise();
+    const res = await timeline.createTimeline({ username, text, type });
+    return successResponse('Successful Post Timeline', 200, res);
   } catch (error) {
     log.error(`[Error] Post timeline -  ${error.message}`);
     return errorResponse(error.message, error.statusCode || 500);
   }
-  return successResponse('Successful Post Timeline', 200, timeline);
 }
 
 export const handler = middy(createTimeline);

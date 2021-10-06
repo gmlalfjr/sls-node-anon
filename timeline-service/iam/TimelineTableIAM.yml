@@ -11,3 +11,4 @@ TimelineTableIAM:
     - ${self:custom.TimelineTable.arn}
     - !Join ['/', ['${self:custom.TimelineTable.arn}', 'index', 'type-index']]
     - !Join ['/', ['${self:custom.TimelineTable.arn}', 'index', 'type-createdAt-index']]
+    - !Join ['/', ['${self:custom.TimelineTable.arn}', 'index', 'usernameAndCreatedAtType']]

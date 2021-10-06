@@ -17,8 +17,10 @@ provider:
     TIMELINE_TABLE_NAME: ${self:custom.TimelineTable.name}
     LIKE_TABLE_NAME: ${self:custom.LikeTable.name}
     COMMENT_TABLE_NAME: ${self:custom.CommentTable.name}
+    NESTED_COMMENT_TABLE_NAME: ${self:custom.NestedCommentTable.name}
   iamRoleStatements:
     - ${file(iam/CommentTableIAM.yml):CommentTableIAM}
+    - ${file(iam/NestedCommentTableIAM.yml):NestedCommentTableIAM}
 
 functions:
   createComment:
@@ -26,33 +28,57 @@ functions:
     events:
       - http:
           method: POST
-          path: /comment/{postId}
+          path: /createComment/{postId}
           authorizer: ${self:custom.authorizer}
   getCommentByPostId:
     handler: src/handler/getCommentByPostId.handler
     events:
       - http:
           method: GET
-          path: /comment/{postId}
+          path: /getAllComment/{postId}
           authorizer: ${self:custom.authorizer}
   deleteCommentByPostId:
     handler: src/handler/deleteComment.handler
     events:
       - http:
           method: DELETE
-          path: /com/{id}
+          path: /deleteComment/{id}
+          authorizer: ${self:custom.authorizer}
+  createNestedComment:
+    handler: src/handler/nestedComment/createNestedComment.handler
+    events:
+      - http:
+          method: POST
+          path: /createNestedComment/{commentId}/{postIds}
+          authorizer: ${self:custom.authorizer}
+  getAllNestedByCommentId:
+    handler: src/handler/nestedComment/getAllNestedByCommentId.handler
+    events:
+      - http:
+          method: GET
+          path: /getNestedComments/{commentIds}
+          authorizer: ${self:custom.authorizer}
+  deleteNestedByCommentId:
+    handler: src/handler/nestedComment/getAllNestedByCommentId.handler
+    events:
+      - http:
+          method: DELETE
+          path: /deleteNestedComment/{nestedCommentId}
           authorizer: ${self:custom.authorizer}
 
 resources:
   Resources:
     CommentTable: ${file(resources/CommentTable.yml):CommentTable}
+    NestedCommentTable: ${file(resources/NestedCommentTable.yml):NestedCommentTable}
     
 custom:
-  #authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-authorize
-  authorizer: arn:aws:lambda:ap-southeast-1:811197814826:function:auth-service-dev-authorize
+  authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-authorize
   CommentTable:
     name: !Ref CommentTable
     arn: !GetAtt CommentTable.Arn
+  NestedCommentTable:
+    name: !Ref NestedCommentTable
+    arn: !GetAtt NestedCommentTable.Arn
   TimelineTable:
     name: TimelineTable-dev
     arn: arn:aws:dynamodb:ap-southeast-1:811197814826:table/TimelineTable-dev

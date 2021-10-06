@@ -1,0 +1,14 @@
+NestedCommentTableIAM:
+  Effect: Allow
+  Action:
+    - dynamodb:PutItem
+    - dynamodb:Scan
+    - dynamodb:GetItem
+    - dynamodb:UpdateItem
+    - dynamodb:DeleteItem
+    - dynamodb:Query
+  Resource:
+    - ${self:custom.NestedCommentTable.arn}
+    - !Join ['/', ['${self:custom.NestedCommentTable.arn}', 'index', 'postIdAndUsernameIndex']]
+    - !Join ['/', ['${self:custom.NestedCommentTable.arn}', 'index', 'commentIdAndUsernameIndex']]
+    - !Join ['/', ['${self:custom.NestedCommentTable.arn}', 'index', 'commentIdAndCreatedAtIndex']]

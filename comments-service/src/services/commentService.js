@@ -20,15 +20,24 @@ class CommentServices {
         totalLike: 0, //default to 0
         createdAt: date,
         modifiedAt: date,
+        generatedName: ""
       }
     }
     await this.getPostDetail(postId)
-    const getComment = await this.getCommentDetail(postId, username)
+    const getComment = await this.getCommentDetail(postId, username);
     if (getComment.length > 0) {
       Object.assign(query.Item, { generatedName: getComment[0].generatedName })
     } else {
-      var name = PREFIX[Math.floor(Math.random()*PREFIX.length)];
-      Object.assign(query.Item, { generatedName: name })
+      const getNestedCommentDetail = await this.getNestedCommentDetail(postId, username)
+      console.log(getNestedCommentDetail, 'LOG NESTED COMMENT');
+      if (getNestedCommentDetail.length > 0) {
+        Object.assign(query.Item, { generatedName: getNestedCommentDetail[0].generatedName })
+      } else {
+        console.log('JADI KENA MARII');
+        var name = PREFIX[Math.floor(Math.random()*PREFIX.length)];
+        Object.assign(query.Item, { generatedName: name })
+      }
+
     }
     try {
       await putComment(query);
@@ -128,9 +137,7 @@ class CommentServices {
     }
     try {
       const queryComment = await query(dynamodbQuery)
-      console.log(queryComment, 'QUERY COOMENT');
       result = this._getUserComment(queryComment, payload.username);
-      console.log(result ,'LOG COBA RESULT');
       return result
     } catch (error) {
       log.error(`[Error] get All Comments-  ${error.message}`);
@@ -186,6 +193,34 @@ class CommentServices {
     } catch (error) {
       throw new InternalServerError(error)
     }
+  }
+
+  async getNestedCommentDetail(id, username) {
+    let result;
+    const params = {
+      TableName: process.env.NESTED_COMMENT_TABLE_NAME,
+      IndexName: 'postIdAndUsernameIndex',
+      Limit: 1,
+      KeyConditionExpression: "#username = :username AND #postId = :postId",
+      ExpressionAttributeNames: {
+        '#username': 'username',
+        '#postId': 'postId'
+      },
+      ExpressionAttributeValues: {
+        ':username': username,
+        ':postId': id
+      }
+    };
+    try {
+      const getItem = await query(params)
+  
+      result = getItem.Items;
+    } catch (error) {
+      log.error(`[Error] get Detail-  ${error.message}`);
+      throw new InternalServerError(error.message);
+    }
+  
+    return result;
   }
 }
 

@@ -2,7 +2,9 @@
 import bunyan from 'bunyan';
 import middy from '../lib/commonMiddleware';
 import { errorResponse, successResponse } from '../commonResponse';
-import getDetail from './getDetail';
+import TimelineService from '../service/timelineService';
+
+const timeline = new TimelineService();
 
 const log = bunyan.createLogger({ name: 'timeline-services' });
 async function getPostDetail(event) {
@@ -13,7 +15,7 @@ async function getPostDetail(event) {
       TableName: process.env.TIMELINE_TABLE_NAME,
       Key: { id },
     };
-    result = await getDetail(params);
+    result = await timeline.getDetail(params);
   } catch (error) {
     log.error(`[Error] Post timeline -  ${error.message}`);
     return errorResponse(error.message, error.statusCode);

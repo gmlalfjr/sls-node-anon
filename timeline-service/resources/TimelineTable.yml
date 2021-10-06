@@ -10,7 +10,8 @@ TimelineTable:
         AttributeType: S
       - AttributeName: createdAt
         AttributeType: S
-
+      - AttributeName: username
+        AttributeType: S
     KeySchema:
       - AttributeName: id
         KeyType: HASH
@@ -19,5 +20,13 @@ TimelineTable:
         KeySchema: 
           - AttributeName: postId
             KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+      - IndexName: usernameAndCreatedAtType
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
         Projection:
           ProjectionType: ALL

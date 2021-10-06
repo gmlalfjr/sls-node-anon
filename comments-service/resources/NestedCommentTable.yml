@@ -1,7 +1,7 @@
-CommentTable:
+NestedCommentTable:
   Type: AWS::DynamoDB::Table
   Properties:
-    TableName: CommentTable-${self:provider.stage}
+    TableName: NestedCommentTable-${self:provider.stage}
     BillingMode: PAY_PER_REQUEST
     AttributeDefinitions:
       - AttributeName: id
@@ -10,22 +10,13 @@ CommentTable:
         AttributeType: S
       - AttributeName: username
         AttributeType: S
+      - AttributeName: commentId
+        AttributeType: S
       - AttributeName: createdAt
         AttributeType: S
     KeySchema:
       - AttributeName: id
         KeyType: HASH
-      - AttributeName: username
-        KeyType: RANGE
-    LocalSecondaryIndexes:
-      - IndexName: idAndUsernameIndex
-        KeySchema: 
-          - AttributeName: id
-            KeyType: HASH
-          - AttributeName: username
-            KeyType: RANGE
-        Projection:
-          ProjectionType: ALL
     GlobalSecondaryIndexes:
       - IndexName: postIdAndUsernameIndex
         KeySchema: 
@@ -35,9 +26,17 @@ CommentTable:
             KeyType: RANGE
         Projection:
           ProjectionType: ALL
-      - IndexName: postIdAndcreatedAtIndex
+      - IndexName: commentIdAndUsernameIndex
         KeySchema: 
-          - AttributeName: postId
+          - AttributeName: commentId
+            KeyType: HASH
+          - AttributeName: username
+            KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
+      - IndexName: commentIdAndCreatedAtIndex
+        KeySchema: 
+          - AttributeName: commentId
             KeyType: HASH
           - AttributeName: createdAt
             KeyType: RANGE

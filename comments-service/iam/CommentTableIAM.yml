@@ -10,5 +10,7 @@ CommentTableIAM:
   Resource:
     - ${self:custom.CommentTable.arn}
     - ${self:custom.TimelineTable.arn}
+    - ${self:custom.NestedCommentTable.arn}
     - !Join ['/', ['${self:custom.CommentTable.arn}', 'index', 'postIdAndUsernameIndex']]
-    - !Join ['/', ['${self:custom.CommentTable.arn}', 'index', 'postIdAndcreatedAtIndex']]
+    - !Join ['/', ['${self:custom.CommentTable.arn}', 'index', 'postIdAndcreatedAtIndex']]    
+    - !Join ['/', ['${self:custom.CommentTable.arn}', 'index', 'idAndUsernameIndex']]
